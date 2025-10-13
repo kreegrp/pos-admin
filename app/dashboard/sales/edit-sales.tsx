@@ -63,7 +63,6 @@ export default function EditSales({
   const [salesItems, setSalesItems] = useState<SalesItem[]>([]);
   const [showAddItems, setShowAddItems] = useState(false);
 
-  // Form state for sales update
   const [formData, setFormData] = useState({
     paymentStatus: "",
     orderStatus: "",
@@ -79,7 +78,6 @@ export default function EditSales({
     notes: "",
   });
 
-  // Fetch payment methods on component mount
   useEffect(() => {
     const fetchPaymentMethods = async () => {
       try {
@@ -102,7 +100,6 @@ export default function EditSales({
     }
   }, [baseUrl, isOpen]);
 
-  // Populate form when selectedSale changes
   useEffect(() => {
     if (selectedSale && isOpen) {
       setFormData({
@@ -120,7 +117,6 @@ export default function EditSales({
         notes: selectedSale.notes || "",
       });
 
-      // Initialize sales items
       const items =
         selectedSale.SalesItems?.map((item: any) => ({
           id: item.id,
@@ -137,7 +133,6 @@ export default function EditSales({
     }
   }, [selectedSale, isOpen]);
 
-  // Calculate totals based on items
   const calculateTotals = (
     items: SalesItem[],
     discount: number = 0,
@@ -154,7 +149,6 @@ export default function EditSales({
     }));
   };
 
-  // Handle item quantity change
   const updateItemQuantity = (index: number, newQuantity: number) => {
     if (newQuantity < 1) return;
 
@@ -166,27 +160,23 @@ export default function EditSales({
     calculateTotals(updatedItems, formData.discount, formData.tax);
   };
 
-  // Remove item from order
   const removeItem = (index: number) => {
     const updatedItems = salesItems.filter((_, i) => i !== index);
     setSalesItems(updatedItems);
     calculateTotals(updatedItems, formData.discount, formData.tax);
   };
 
-  // Add new menu item to order
   const addMenuItem = (menuItem: any) => {
     const existingItemIndex = salesItems.findIndex(
       (item) => item.menuItemId === menuItem.id
     );
 
     if (existingItemIndex >= 0) {
-      // Item already exists, increase quantity
       updateItemQuantity(
         existingItemIndex,
         salesItems[existingItemIndex].quantity + 1
       );
     } else {
-      // Add new item
       const newItem: SalesItem = {
         itemName: menuItem.itemName,
         quantity: 1,
@@ -202,20 +192,25 @@ export default function EditSales({
     }
   };
 
-  // Handle discount/tax changes
-  const handleFinancialChange = (field: "discount" | "tax" | "deliveryCharges", value: number) => {
+  const handleFinancialChange = (
+    field: "discount" | "tax" | "deliveryCharges",
+    value: number
+  ) => {
     const updatedFormData = { ...formData, [field]: value };
     setFormData(updatedFormData);
-    calculateTotals(salesItems, updatedFormData.discount, updatedFormData.tax, updatedFormData.deliveryCharges);
+    calculateTotals(
+      salesItems,
+      updatedFormData.discount,
+      updatedFormData.tax,
+      updatedFormData.deliveryCharges
+    );
   };
 
-  // Handle form submission
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsFormLoading(true);
 
     try {
-      // Validate form data
       const validatedData = SalesUpdateSchema.parse({
         ...formData,
         subTotal: Number(formData.subTotal),
@@ -224,7 +219,6 @@ export default function EditSales({
         total: Number(formData.total),
       });
 
-      // Prepare sales items data
       const salesItemsData = salesItems.map((item) => ({
         id: item.id,
         itemName: item.itemName,
@@ -242,7 +236,6 @@ export default function EditSales({
 
       console.log("Submitted form data:", updateData);
 
-      // Make API call to update sales
       const userId = getUserIdFromLocalStorage();
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
